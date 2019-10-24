@@ -48,8 +48,11 @@ public class App {
         router.add(templateEngine: StencilTemplateEngine(), forFileExtensions: ["html"])
 
         // Common endpoints
-        router.all("/static", middleware: StaticFileServer(path: "./static", options: StaticFileServer.Options(serveIndexForDirectory: false)))
-
+        let cacheOptions  = StaticFileServer.CacheOptions(addLastModifiedHeader: true, maxAgeCacheControlHeader: 30000000, generateETag: true)
+        let staticOptions = StaticFileServer.Options(serveIndexForDirectory: false, cacheOptions: cacheOptions)
+        let staticServer  = StaticFileServer(path: "./static", options: staticOptions)
+        router.all("/static", middleware: staticServer)
+        
         router.get("/logout") { request, response, next in
             request.session?.destroy { (error) in
                 if let error = error {
